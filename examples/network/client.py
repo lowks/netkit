@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import bintp
-from netstream import NetStream
+from netkit import bintp
+from netkit.netstream import NetStream
 
 import logging
 import socket
 
-logger = logging.getLogger('bintp')
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
-logger = logging.getLogger('netstream')
+logger = logging.getLogger('netkit')
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
 

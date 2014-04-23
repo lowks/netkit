@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import bintp
+from netkit import bintp
 
 p = bintp.new()
 print p
