@@ -68,8 +68,6 @@ class Stream(object):
         self._read_regex = None
         self._read_bytes = None
         self._read_until_close = False
-        self._read_callback = None
-        self._streaming_callback = None
         self._read_checker = None
         self._close_callback = None
 
@@ -106,34 +104,32 @@ class Stream(object):
         self._close_callback = callback
 
     @count_reader
-    def read_until_regex(self, regex, callback):
+    def read_until_regex(self, regex):
         """Run ``callback`` when we read the given regex pattern.
 
         The callback will get the data read (including the data that
         matched the regex and anything that came before it) as an argument.
         """
-        self._set_read_callback(callback)
         self._read_regex = re.compile(regex)
         while True:
-            # 0 代表调用到callback；1代表还要继续读；-1代表链接断开
-            if self._try_inline_read() <= 0:
-                break
+            ret, data = self._try_inline_read()
+            if ret <= 0:
+                return data
 
     @count_reader
-    def read_until(self, delimiter, callback):
+    def read_until(self, delimiter):
         """
         为了兼容调用的方法
         """
 
-        self._set_read_callback(callback)
         self._read_delimiter = delimiter
         while True:
-            # 0 代表调用到callback；1代表还要继续读；-1代表链接断开
-            if self._try_inline_read() <= 0:
-                break
+            ret, data = self._try_inline_read()
+            if ret <= 0:
+                return data
 
     @count_reader
-    def read_bytes(self, num_bytes, callback, streaming_callback=None):
+    def read_bytes(self, num_bytes):
         """Run callback when we read the given number of bytes.
 
         If a ``streaming_callback`` is given, it will be called with chunks
@@ -141,17 +137,15 @@ class Stream(object):
         ``callback`` will be empty.  Otherwise, the ``callback`` gets
         the data as an argument.
         """
-        self._set_read_callback(callback)
         assert isinstance(num_bytes, numbers.Integral)
         self._read_bytes = num_bytes
-        self._streaming_callback = streaming_callback
         while True:
-            # 0 代表调用到callback；1代表还要继续读；-1代表链接断开
-            if self._try_inline_read() <= 0:
-                break
+            ret, data = self._try_inline_read()
+            if ret <= 0:
+                return data
 
     @count_reader
-    def read_until_close(self, callback, streaming_callback=None):
+    def read_until_close(self):
         """Reads all data from the socket until it is closed.
 
         If a ``streaming_callback`` is given, it will be called with chunks
@@ -162,27 +156,17 @@ class Stream(object):
         Subject to ``max_buffer_size`` limit from `IOStream` constructor if
         a ``streaming_callback`` is not used.
         """
-        self._set_read_callback(callback)
-        self._streaming_callback = streaming_callback
         if self.closed():
-            if self._streaming_callback is not None:
-                self._run_callback(self._streaming_callback,
-                                   self._consume(self._read_buffer_size))
-            self._run_callback(self._read_callback,
-                               self._consume(self._read_buffer_size))
-            self._streaming_callback = None
-            self._read_callback = None
-            return
+            return self._consume(self._read_buffer_size)
 
         self._read_until_close = True
-        self._streaming_callback = streaming_callback
         while True:
-            # 0 代表调用到callback；1代表还要继续读；-1代表链接断开
-            if self._try_inline_read() < 0:
-                break
+            ret, data = self._try_inline_read()
+            if ret <= 0:
+                return data
 
     @count_reader
-    def read_with_checker(self, checker, callback):
+    def read_with_checker(self, checker):
         """
         checker(buf):
             0 继续接收
@@ -190,32 +174,30 @@ class Stream(object):
             <0 异常
         """
 
-        self._set_read_callback(callback)
         self._read_checker = checker
         while True:
-            # 0 代表调用到callback；1代表还要继续读；-1代表链接断开
-            if self._try_inline_read() <= 0:
-                break
+            ret, data = self._try_inline_read()
+            if ret <= 0:
+                return data
 
     @count_writer
-    def write(self, data, callback=None):
+    def write(self, data):
         """
         写数据
         """
 
         if self.closed():
-            return
+            return -1
 
         while data:
             num_bytes = safe_call(self.write_to_fd, data)
             if num_bytes is None:
                 logger.error('write num_bytes: %s', num_bytes)
-                break
+                return -2
 
             data = data[num_bytes:]
 
-        if callback:
-            self._run_callback(callback)
+        return 0
 
     def closed(self):
         return not self.sock
@@ -247,48 +229,38 @@ class Stream(object):
         """
         return safe_call(callback, *args)
 
-    def _set_read_callback(self, callback):
-        assert not self._read_callback, "Already reading"
-        self._read_callback = callback
-
     def _try_inline_read(self):
         """Attempt to complete the current read operation from buffered data.
 
-        If the read can be completed without blocking, schedules the
-        read callback on the next IOLoop iteration; otherwise starts
-        listening for reads on the socket.
+        0 代表获取到数据了；1代表还要继续读；-1代表链接断开
         """
         # See if we've already got the data from a previous read
-        if self._read_from_buffer():
-            return 0
+        data = self._read_from_buffer()
+        if data:
+            return 0, data
 
         if self._read_to_buffer() == 0:
             # 说明断连接了
             self.close()
 
-            if self._read_until_close:
-                if (self._streaming_callback is not None and
-                        self._read_buffer_size):
-                    self._run_callback(self._streaming_callback,
-                                       self._consume(self._read_buffer_size))
-                callback = self._read_callback
-                self._read_callback = None
-                self._read_until_close = False
-                self._run_callback(callback,
-                                   self._consume(self._read_buffer_size))
-
             if self._close_callback:
                 self._run_callback(self._close_callback)
                 self._close_callback = None
 
+            if self._read_until_close:
+                self._read_until_close = False
+
+                return -1, self._consume(self._read_buffer_size)
+
             # 直接返回，因为buffer里面一定没数据了
-            return -1
+            return -1, None
 
-        if self._read_from_buffer():
+        data = self._read_from_buffer()
+        if data:
             # 收到了新的数据，判断下是否满足要求
-            return 0
+            return 0, data
 
-        return 1
+        return 1, None
 
     def _read_to_buffer(self):
         """Reads from the socket and appends the result to the read buffer.
@@ -315,21 +287,10 @@ class Stream(object):
 
         Returns True if the read was completed.
         """
-        if self._streaming_callback is not None and self._read_buffer_size:
-            bytes_to_consume = self._read_buffer_size
-            if self._read_bytes is not None:
-                bytes_to_consume = min(self._read_bytes, bytes_to_consume)
-                self._read_bytes -= bytes_to_consume
-            self._run_callback(self._streaming_callback,
-                               self._consume(bytes_to_consume))
         if self._read_bytes is not None and self._read_buffer_size >= self._read_bytes:
             num_bytes = self._read_bytes
-            callback = self._read_callback
-            self._read_callback = None
-            self._streaming_callback = None
             self._read_bytes = None
-            self._run_callback(callback, self._consume(num_bytes))
-            return True
+            return self._consume(num_bytes)
         elif self._read_delimiter is not None:
             # Multi-byte delimiters (e.g. '\r\n') may straddle two
             # chunks in the read buffer, so we can't easily find them
@@ -343,14 +304,9 @@ class Stream(object):
                 while True:
                     loc = self._read_buffer[0].find(self._read_delimiter)
                     if loc != -1:
-                        callback = self._read_callback
                         delimiter_len = len(self._read_delimiter)
-                        self._read_callback = None
-                        self._streaming_callback = None
                         self._read_delimiter = None
-                        self._run_callback(callback,
-                                           self._consume(loc + delimiter_len))
-                        return True
+                        return self._consume(loc + delimiter_len)
                     if len(self._read_buffer) == 1:
                         break
                     _double_prefix(self._read_buffer)
@@ -359,12 +315,8 @@ class Stream(object):
                 while True:
                     m = self._read_regex.search(self._read_buffer[0])
                     if m is not None:
-                        callback = self._read_callback
-                        self._read_callback = None
-                        self._streaming_callback = None
                         self._read_regex = None
-                        self._run_callback(callback, self._consume(m.end()))
-                        return True
+                        return self._consume(m.end())
                     if len(self._read_buffer) == 1:
                         break
                     _double_prefix(self._read_buffer)
@@ -374,13 +326,8 @@ class Stream(object):
                     loc, obj = self._read_checker(self._read_buffer[0])
                     if loc > 0:
                         # 说明就是要这些长度
-                        callback = self._read_callback
-                        self._read_callback = None
-                        self._streaming_callback = None
                         self._read_delimiter = None
-                        self._run_callback(callback,
-                                           self._consume(loc))
-                        return True
+                        return self._consume(loc)
                     elif loc < 0:
                         # 说明接受的数据已经有问题了，直接把数据删掉，并退出
                         self._read_buffer.popleft()
@@ -389,7 +336,7 @@ class Stream(object):
                     if len(self._read_buffer) == 1:
                         break
                     _double_prefix(self._read_buffer)
-        return False
+        return None
 
     def _consume(self, loc):
         if loc == 0:
