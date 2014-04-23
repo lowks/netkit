@@ -285,7 +285,7 @@ class Stream(object):
     def _read_from_buffer(self):
         """Attempts to complete the currently-pending read from the buffer.
 
-        Returns True if the read was completed.
+        Returns data if the read was completed.
         """
         if self._read_bytes is not None and self._read_buffer_size >= self._read_bytes:
             num_bytes = self._read_bytes
@@ -326,7 +326,7 @@ class Stream(object):
                     loc, obj = self._read_checker(self._read_buffer[0])
                     if loc > 0:
                         # 说明就是要这些长度
-                        self._read_delimiter = None
+                        self._read_checker = None
                         return self._consume(loc)
                     elif loc < 0:
                         # 说明接受的数据已经有问题了，直接把数据删掉，并退出
