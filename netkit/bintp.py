@@ -54,8 +54,10 @@ def from_buf(buf):
         logger.error('unpack fail.', exc_info=True)
         return -1, None
 
-    magic = values[0]
-    body_len = values[2]
+    dict_values = dict([(key, values[i]) for i, key in enumerate(HEADER_ATTRS.keys())])
+
+    magic = dict_values.get('_magic')
+    body_len = dict_values.get('_body_len')
 
     if magic != HEADER_MAGIC:
         logger.error('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
