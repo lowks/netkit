@@ -12,7 +12,7 @@ HEADER_FORMAT = '!3I2i4I4i32s'
 HEADER_LEN = struct.calcsize(HEADER_FORMAT)
 
 HEADER_ATTRS = OrderedDict([
-    ('_magic', HEADER_MAGIC),   # unsigned int
+    ('magic', HEADER_MAGIC),   # unsigned int
     ('version', 0),  # unsigned int
     ('_body_len', 0),  # unsigned int
     ('cmd', 0),  # int
@@ -56,7 +56,7 @@ def from_buf(buf):
 
     dict_values = dict([(key, values[i]) for i, key in enumerate(HEADER_ATTRS.keys())])
 
-    magic = dict_values.get('_magic')
+    magic = dict_values.get('magic')
     body_len = dict_values.get('_body_len')
 
     if magic != HEADER_MAGIC:
@@ -103,10 +103,6 @@ class Bintp(object):
     @property
     def packet_len(self):
         return HEADER_LEN + self.body_len
-
-    @property
-    def magic(self):
-        return self._magic
 
     @property
     def body(self):
