@@ -33,9 +33,10 @@ class Connection(object):
                     print 'client closed'
                     # 说明客户端断掉链接了
                     return
-                print "message, len: %s, content: %r" % (len(message), message)
+                #print "message, len: %s, content: %r" % (len(message), message)
 
                 ret, tp = bintp.from_buf(message)
+                print tp
                 tp.cmd += 1
                 self.stream.write(tp.pack())
 
