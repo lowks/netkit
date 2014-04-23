@@ -1,21 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-#=============================================================================
-#
-#     FileName: stream.py
-#         Desc: stream for network. can use with normal socket or gevent socket.
-#
-#       Author: dantezhu
-#        Email: zny2008@gmail.com
-#     HomePage: http://www.vimer.cn
-#
-#      Created: 2014-04-22 18:33:20
-#      Version: 0.0.1
-#      History:
-#               0.0.1 | dantezhu | 2014-04-22 18:33:20 | init
-#
-#=============================================================================
-"""
 
 import socket
 import functools
@@ -50,7 +33,7 @@ def count_writer(func):
 
 class Stream(object):
     """
-    为了和tornado的IOStream接口匹配
+    从tornado的iostream衍生而来
     """
 
     def __init__(self, sock, max_buffer_size=None,
