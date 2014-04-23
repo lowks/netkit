@@ -96,10 +96,7 @@ class Stream(object):
 
     @count_reader
     def read_until_regex(self, regex):
-        """Run ``callback`` when we read the given regex pattern.
-
-        The callback will get the data read (including the data that
-        matched the regex and anything that came before it) as an argument.
+        """Run when we read the given regex pattern.
         """
         self._read_regex = re.compile(regex)
         while True:
@@ -121,12 +118,7 @@ class Stream(object):
 
     @count_reader
     def read_bytes(self, num_bytes):
-        """Run callback when we read the given number of bytes.
-
-        If a ``streaming_callback`` is given, it will be called with chunks
-        of data as they become available, and the argument to the final
-        ``callback`` will be empty.  Otherwise, the ``callback`` gets
-        the data as an argument.
+        """Run when we read the given number of bytes.
         """
         assert isinstance(num_bytes, numbers.Integral)
         self._read_bytes = num_bytes
@@ -138,14 +130,6 @@ class Stream(object):
     @count_reader
     def read_until_close(self):
         """Reads all data from the socket until it is closed.
-
-        If a ``streaming_callback`` is given, it will be called with chunks
-        of data as they become available, and the argument to the final
-        ``callback`` will be empty.  Otherwise, the ``callback`` gets the
-        data as an argument.
-
-        Subject to ``max_buffer_size`` limit from `IOStream` constructor if
-        a ``streaming_callback`` is not used.
         """
         if self.closed():
             return self._consume(self._read_buffer_size)
@@ -217,12 +201,6 @@ class Stream(object):
 
     def write_to_fd(self, data):
         return self.sock.send(data)
-
-    def _run_callback(self, callback, *args):
-        """
-        替换为kola的safe_call
-        """
-        return safe_call(callback, *args)
 
     def _try_inline_read(self):
         """Attempt to complete the current read operation from buffered data.
