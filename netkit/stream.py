@@ -192,7 +192,6 @@ class Stream(object):
         while data:
             num_bytes = safe_call(self.write_to_fd, data)
             if num_bytes is None:
-                logger.error('write num_bytes: %s', num_bytes)
                 return -2
 
             data = data[num_bytes:]

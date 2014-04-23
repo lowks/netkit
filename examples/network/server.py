@@ -27,7 +27,9 @@ def handle(socket, address):
         # 否则会有内存泄漏
         def spawn_read():
             buf = stream.read_with_checker(bintp.from_buf)
+            print buf
             logger.info('closed: %s', stream.closed())
+            logger.info('sock: %s', stream.sock)
 
             if stream.closed():
                 status['alive'] = False
