@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from netkit import bintp
-from netkit.netstream import NetStream
+from netkit.stream import Stream
 
 import logging
 import socket
@@ -14,7 +14,7 @@ address = ('127.0.0.1', 7777)
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(address)
 
-stream = NetStream(s)
+stream = Stream(s)
 
 tp = bintp.new()
 tp.body = '我爱你'

@@ -2,7 +2,7 @@
 """
 #=============================================================================
 #
-#     FileName: netstream.py
+#     FileName: stream.py
 #         Desc: stream for network. can use with normal socket or gevent socket.
 #
 #       Author: dantezhu
@@ -49,7 +49,7 @@ def count_writer(func):
     return func_wrapper
 
 
-class NetStream(object):
+class Stream(object):
     """
     为了和tornado的IOStream接口匹配
     """

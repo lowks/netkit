@@ -4,7 +4,7 @@
 
 
 from netkit import bintp
-from netkit.netstream import NetStream
+from netkit.stream import Stream
 import gevent
 from gevent.server import StreamServer
 import logging
@@ -16,7 +16,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def handle(socket, address):
-    stream = NetStream(socket)
+    stream = Stream(socket)
     status = dict(
         alive=True
     )
