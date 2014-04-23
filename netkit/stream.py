@@ -54,8 +54,6 @@ class Stream(object):
     为了和tornado的IOStream接口匹配
     """
 
-    _close_callback = None
-
     def __init__(self, sock, max_buffer_size=None,
                  read_chunk_size=4096):
         self.sock = sock
@@ -69,7 +67,6 @@ class Stream(object):
         self._read_bytes = None
         self._read_until_close = False
         self._read_checker = None
-        self._close_callback = None
 
         self.reader_count = 0
         self.writer_count = 0
@@ -96,12 +93,6 @@ class Stream(object):
         if self.closed():
             return
         safe_call(self.sock.shutdown, how)
-
-    def set_close_callback(self, callback):
-        """
-        设置回调
-        """
-        self._close_callback = callback
 
     @count_reader
     def read_until_regex(self, regex):
@@ -246,10 +237,6 @@ class Stream(object):
         if self._read_to_buffer() == 0:
             # 说明断连接了
             self.close()
-
-            if self._close_callback:
-                self._run_callback(self._close_callback)
-                self._close_callback = None
 
             if self._read_until_close:
                 self._read_until_close = False
