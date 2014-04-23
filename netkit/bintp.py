@@ -30,7 +30,7 @@ HEADER_ATTRS = OrderedDict([
 
 
 def new():
-    return BinTP()
+    return Bintp()
 
 
 def from_buf(buf):
@@ -66,7 +66,7 @@ def from_buf(buf):
         # 还要继续收
         return 0, None
 
-    tp = BinTP()
+    tp = Bintp()
 
     for i, k in enumerate(HEADER_ATTRS.keys()):
         setattr(tp, k, values[i])
@@ -76,7 +76,7 @@ def from_buf(buf):
     return tp.packet_len, tp
 
 
-class BinTP(object):
+class Bintp(object):
     """
     类
     """
