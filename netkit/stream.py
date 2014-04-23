@@ -23,7 +23,6 @@ import numbers
 import collections
 import re
 from .log import logger
-from .utils import safe_call
 
 
 def count_reader(func):
@@ -76,9 +75,7 @@ class Stream(object):
             # 如果已经关闭过，就直接返回了
             return
 
-        if self.sock:
-            safe_call(self.sock.close)
-            self.sock = None
+        self.close_fd()
 
     def shutdown(self, how=2):
         """
@@ -92,7 +89,10 @@ class Stream(object):
         """
         if self.closed():
             return
-        safe_call(self.sock.shutdown, how)
+        try:
+            self.sock.shutdown(how)
+        finally:
+            pass
 
     @count_reader
     def read_until_regex(self, regex):
@@ -165,7 +165,12 @@ class Stream(object):
             return -1
 
         while data:
-            num_bytes = safe_call(self.write_to_fd, data)
+            try:
+                num_bytes = self.write_to_fd(data)
+            except:
+                logger.error('write fail.', exc_info=True)
+                num_bytes = None
+
             if num_bytes is None:
                 return -2
 
@@ -188,8 +193,8 @@ class Stream(object):
         """
         if (self.sock is not None and
                     self.sock.family in (socket.AF_INET, socket.AF_INET6)):
-            safe_call(self.sock.setsockopt,
-                      socket.IPPROTO_TCP, socket.TCP_NODELAY, 1 if value else 0)
+            self.sock.setsockopt(
+                socket.IPPROTO_TCP, socket.TCP_NODELAY, 1 if value else 0)
 
     def read_from_fd(self):
         chunk = self.sock.recv(self.read_chunk_size)
@@ -201,6 +206,13 @@ class Stream(object):
 
     def write_to_fd(self, data):
         return self.sock.send(data)
+
+    def close_fd(self):
+        if self.sock:
+            try:
+                self.sock.close
+            finally:
+                self.sock = None
 
     def _try_inline_read(self):
         """Attempt to complete the current read operation from buffered data.
