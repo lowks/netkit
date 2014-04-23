@@ -218,7 +218,12 @@ class Stream(object):
                       socket.IPPROTO_TCP, socket.TCP_NODELAY, 1 if value else 0)
 
     def read_from_fd(self):
-        return self.sock.recv(self.read_chunk_size)
+        chunk = self.sock.recv(self.read_chunk_size)
+
+        if not chunk:
+            self.close()
+            return None
+        return chunk
 
     def write_to_fd(self, data):
         return self.sock.send(data)

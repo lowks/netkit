@@ -3,6 +3,7 @@
 from netkit import bintp
 from netkit.stream import Stream
 
+import time
 import logging
 import socket
 
@@ -23,10 +24,10 @@ stream.write(tp.pack())
 
 while True:
     # 阻塞
-    def read_over(buf):
-        print bintp.from_buf(buf)
+    buf = stream.read_with_checker(bintp.from_buf)
 
-    stream.read_with_checker(bintp.from_buf, read_over)
+    print bintp.from_buf(buf)
+
     if stream.closed():
         print 'server closed'
         break

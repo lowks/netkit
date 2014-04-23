@@ -3,6 +3,8 @@
 # -*- coding: utf-8 -*-
 
 
+from gevent import monkey;monkey.patch_all()
+
 from netkit import bintp
 from netkit.stream import Stream
 import gevent
@@ -11,8 +13,8 @@ import logging
 
 logger = logging.getLogger('netkit')
 logger.addHandler(logging.StreamHandler())
+logger.addHandler(logging.FileHandler('s.log'))
 logger.setLevel(logging.DEBUG)
-
 
 
 def handle(socket, address):
@@ -24,20 +26,16 @@ def handle(socket, address):
         # 必须要启动一个新的greenlet，在greenlet里面执行readline
         # 否则会有内存泄漏
         def spawn_read():
-            def read_over(buf):
-                ret, tp = bintp.from_buf(buf)
-                print tp
-                tp.version = 1132
-                stream.write(tp.pack())
-
-            stream.read_with_checker(bintp.from_buf, read_over)
+            buf = stream.read_with_checker(bintp.from_buf)
+            logger.info('closed: %s', stream.closed())
 
             if stream.closed():
                 status['alive'] = False
-                print 'client closed'
+                logger.info('client closed')
                 # 说明客户端断掉链接了
                 return
 
+        logger.error('status: %s', status)
         t = gevent.spawn(spawn_read)
         t.join()
 
