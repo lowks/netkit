@@ -287,13 +287,7 @@ class Stream(object):
         elif self._read_checker is not None:
             if self._read_buffer:
                 while True:
-                    ret_value = self._read_checker(self._read_buffer[0])
-                    if isinstance(ret_value, tuple) or isinstance(ret_value, list):
-                        # 针对返回两个的
-                        loc = ret_value[0]
-                    else:
-                        loc = ret_value
-
+                    loc = self._read_checker(self._read_buffer[0])
                     if loc > 0:
                         # 说明就是要这些长度
                         self._read_checker = None
