@@ -7,26 +7,26 @@ from .log import logger
 
 HEADER_MAGIC = 2037952207
 
-# 如果header字段变化，那么格式也要变化
-HEADER_FORMAT = '!3I2i4I4i32s'
-HEADER_LEN = struct.calcsize(HEADER_FORMAT)
-
+# 如果header字段变化，那么格式也会变化
 HEADER_ATTRS = OrderedDict([
-    ('magic', HEADER_MAGIC),   # unsigned int
-    ('version', 0),  # unsigned int
-    ('_body_len', 0),  # unsigned int
-    ('cmd', 0),  # int
-    ('ret', 0),  # int
-    ('reserve_uint1', 0),
-    ('reserve_uint2', 0),
-    ('reserve_uint3', 0),
-    ('reserve_uint4', 0),
-    ('reserve_int1', 0),
-    ('reserve_int2', 0),
-    ('reserve_int3', 0),
-    ('reserve_int4', 0),
-    ('reserve_str', '\0' * 32)
+    ('magic', ('I', HEADER_MAGIC)),
+    ('version', ('I', 0)),
+    ('_body_len', ('I', 0)),
+    ('cmd', ('i', 0)),
+    ('ret', ('i', 0)),
+    ('reserve_uint1', ('I', 0)),
+    ('reserve_uint2', ('I', 0)),
+    ('reserve_uint3', ('I', 0)),
+    ('reserve_uint4', ('I', 0)),
+    ('reserve_int1', ('i', 0)),
+    ('reserve_int2', ('i', 0)),
+    ('reserve_int3', ('i', 0)),
+    ('reserve_int4', ('i', 0)),
+    ('reserve_str', ('32s', ''))
 ])
+
+HEADER_FORMAT = '!' + ''.join(value[0] for value in HEADER_ATTRS.values())
+HEADER_LEN = struct.calcsize(HEADER_FORMAT)
 
 
 class Bintp(object):
@@ -39,7 +39,7 @@ class Bintp(object):
     def __init__(self):
         # 先做初始化
         for k, v in HEADER_ATTRS.items():
-            setattr(self, k, v)
+            setattr(self, k, v[1])
 
     def pack(self):
         """
@@ -138,8 +138,8 @@ def _inline_from_buf(buf):
 
     tp = Bintp()
 
-    for i, k in enumerate(HEADER_ATTRS.keys()):
-        setattr(tp, k, values[i])
+    for k, v in dict_values.items():
+        setattr(tp, k, v)
 
     tp.body = buf[HEADER_LEN:HEADER_LEN+body_len]
 
