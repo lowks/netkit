@@ -24,7 +24,7 @@ stream.write(tp.pack())
 
 while True:
     # 阻塞
-    buf = stream.read_with_checker(bintp.from_buf)
+    buf = stream.read_with_checker(bintp.check_buf)
 
     print bintp.from_buf(buf)
 

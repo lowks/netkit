@@ -29,55 +29,6 @@ HEADER_ATTRS = OrderedDict([
 ])
 
 
-def new():
-    return Bintp()
-
-
-def from_buf(buf):
-    """
-    从buf里面生成，返回格式为 ret, obj
-
-    >0: 成功生成obj，返回了使用的长度，即剩余的部分buf要存起来
-    <0: 报错
-    0: 继续收
-
-    """
-
-    if len(buf) < HEADER_LEN:
-        logger.error('buf.len(%s) should > header_len(%s)' % (len(buf), HEADER_LEN))
-        # raise ValueError('buf.len(%s) should > header_len(%s)' % (len(buf), HEADER_LEN))
-        return 0, None
-
-    try:
-        values = struct.unpack(HEADER_FORMAT, buf[:HEADER_LEN])
-    except Exception, e:
-        logger.error('unpack fail.', exc_info=True)
-        return -1, None
-
-    dict_values = dict([(key, values[i]) for i, key in enumerate(HEADER_ATTRS.keys())])
-
-    magic = dict_values.get('magic')
-    body_len = dict_values.get('_body_len')
-
-    if magic != HEADER_MAGIC:
-        logger.error('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
-        # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
-        return -2, None
-
-    if len(buf) < (body_len + HEADER_LEN):
-        # 还要继续收
-        return 0, None
-
-    tp = Bintp()
-
-    for i, k in enumerate(HEADER_ATTRS.keys()):
-        setattr(tp, k, values[i])
-
-    tp.body = buf[HEADER_LEN:HEADER_LEN+body_len]
-
-    return tp.packet_len, tp
-
-
 class Bintp(object):
     """
     类
@@ -125,3 +76,71 @@ class Bintp(object):
         return str(values)
 
     __unicode__ = __str__ = __repr__
+
+
+def new():
+    return Bintp()
+
+
+def check_buf(buf):
+    """
+    检查buf是否合法
+    >0: 成功，返回了使用的长度
+    <0: 报错
+    0: 继续收
+    """
+    return _inline_from_buf(buf)[0]
+
+
+def from_buf(buf):
+    """
+    返回生成的tp
+    None: 生成失败
+    非None: 生成成功
+    """
+    return _inline_from_buf(buf)[1]
+
+
+def _inline_from_buf(buf):
+    """
+    从buf里面生成，返回格式为 ret, obj
+
+    >0: 成功生成obj，返回了使用的长度，即剩余的部分buf要存起来
+    <0: 报错
+    0: 继续收
+
+    """
+
+    if len(buf) < HEADER_LEN:
+        logger.error('buf.len(%s) should > header_len(%s)' % (len(buf), HEADER_LEN))
+        # raise ValueError('buf.len(%s) should > header_len(%s)' % (len(buf), HEADER_LEN))
+        return 0, None
+
+    try:
+        values = struct.unpack(HEADER_FORMAT, buf[:HEADER_LEN])
+    except Exception, e:
+        logger.error('unpack fail.', exc_info=True)
+        return -1, None
+
+    dict_values = dict([(key, values[i]) for i, key in enumerate(HEADER_ATTRS.keys())])
+
+    magic = dict_values.get('magic')
+    body_len = dict_values.get('_body_len')
+
+    if magic != HEADER_MAGIC:
+        logger.error('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
+        # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
+        return -2, None
+
+    if len(buf) < (body_len + HEADER_LEN):
+        # 还要继续收
+        return 0, None
+
+    tp = Bintp()
+
+    for i, k in enumerate(HEADER_ATTRS.keys()):
+        setattr(tp, k, values[i])
+
+    tp.body = buf[HEADER_LEN:HEADER_LEN+body_len]
+
+    return tp.packet_len, tp

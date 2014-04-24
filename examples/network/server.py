@@ -28,14 +28,14 @@ class Connection(object):
             # 必须要启动一个新的greenlet，在greenlet里面执行readline
             # 否则会有内存泄漏
             def spawn_read():
-                message = self.stream.read_with_checker(bintp.from_buf)
+                message = self.stream.read_with_checker(bintp.check_buf)
                 if self.stream.closed():
                     print 'client closed'
                     # 说明客户端断掉链接了
                     return
                 #print "message, len: %s, content: %r" % (len(message), message)
 
-                ret, tp = bintp.from_buf(message)
+                tp = bintp.from_buf(message)
                 print tp
                 tp.cmd += 1
                 self.stream.write(tp.pack())
