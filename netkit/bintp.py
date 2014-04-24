@@ -52,6 +52,10 @@ class Bintp(object):
         return header + self.body
 
     @property
+    def header_len(self):
+        return HEADER_LEN
+
+    @property
     def packet_len(self):
         return HEADER_LEN + self.body_len
 
