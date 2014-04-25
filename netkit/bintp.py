@@ -77,9 +77,9 @@ class Bintp(object):
 
         values.append(('body', self.body))
 
-        return str(values)
+        return repr(values)
 
-    __unicode__ = __str__ = __repr__
+    __str__ = __repr__
 
 
 def new():
