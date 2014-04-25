@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from netkit import bintp
+from netkit.bintp import Bintp
 
 
-p = bintp.new()
+p = Bintp()
 p.body = '我爱你'
 print p
 print repr(p.pack())
@@ -11,8 +11,10 @@ print p.body
 
 buf = p.pack()
 
-for i in range(bintp.HEADER_LEN, len(buf)+1):
+q = Bintp()
+for i in range(0, len(buf)+1):
     tmp_buf = buf[0:i]
 
-    q = bintp.from_buf(tmp_buf)
-    print q
+    if q.unpack(tmp_buf) > 0:
+        print q
+        break

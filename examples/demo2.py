@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from netkit import bintp
+from netkit.bintp import Bintp
 
 
-p = bintp.new()
+p = Bintp()
 p.body = '我爱你'
 print p
 print repr(p.pack())
 print p.body
 
-q = bintp.from_buf(p.pack())
+q = Bintp()
+print q.unpack(p.pack())
 print q
 print q.body
 print q.magic

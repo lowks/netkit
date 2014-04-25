@@ -4,6 +4,16 @@ import struct
 from collections import OrderedDict
 from .log import logger
 
+# 如果header字段变化，那么格式也会变化
+HEADER_ATTRS = OrderedDict([
+    ('magic', ('I', 2037952207)),
+    ('version', ('I', 0)),
+    ('_body_len', ('I', 0)),
+    ('cmd', ('i', 0)),
+    ('ret', ('i', 0)),
+    ('reserve_str', ('32s', ''))
+])
+
 
 class Bintp(object):
     """
@@ -11,26 +21,13 @@ class Bintp(object):
     """
 
     # 如果header字段变化，那么格式也会变化
-    header_attrs = OrderedDict([
-        ('magic', ('I', 2037952207)),
-        ('version', ('I', 0)),
-        ('_body_len', ('I', 0)),
-        ('cmd', ('i', 0)),
-        ('ret', ('i', 0)),
-        ('reserve_uint1', ('I', 0)),
-        ('reserve_uint2', ('I', 0)),
-        ('reserve_uint3', ('I', 0)),
-        ('reserve_uint4', ('I', 0)),
-        ('reserve_int1', ('i', 0)),
-        ('reserve_int2', ('i', 0)),
-        ('reserve_int3', ('i', 0)),
-        ('reserve_int4', ('i', 0)),
-        ('reserve_str', ('32s', ''))
-    ])
+    header_attrs = None
 
     _body = ''
 
-    def __init__(self):
+    def __init__(self, header_attrs=None):
+        self.header_attrs = header_attrs or HEADER_ATTRS
+
         # 先做初始化
         for k, v in self.header_attrs.items():
             setattr(self, k, v[1])

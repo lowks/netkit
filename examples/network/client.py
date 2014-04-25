@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from netkit import bintp
+from netkit.bintp import Bintp
 from netkit.stream import Stream
 
 import time
@@ -17,17 +17,19 @@ s.connect(address)
 
 stream = Stream(s)
 
-tp = bintp.new()
+tp = Bintp()
 tp.body = '我爱你'
 
 stream.write(tp.pack())
 
 while True:
     # 阻塞
-    buf = stream.read_with_checker(bintp.check_buf)
+    buf = stream.read_with_checker(Bintp().unpack)
 
     if buf:
-        print bintp.from_buf(buf)
+        rtp = Bintp()
+        rtp.unpack(buf)
+        print rtp
 
     if stream.closed():
         print 'server closed'

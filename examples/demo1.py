@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from netkit import bintp
+from netkit.bintp import Bintp
 
-p = bintp.new()
+p = Bintp()
 print p
 print repr(p.pack())
 
-print bintp.from_buf(p.pack())
-print bintp.check_buf(p.pack())
+tp = Bintp()
+
+print tp.unpack(p.pack())
+
+print tp

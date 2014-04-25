@@ -5,7 +5,7 @@
 
 from gevent import monkey;monkey.patch_all()
 
-from netkit import bintp
+from netkit.bintp import Bintp
 from netkit.stream import Stream
 import gevent
 from gevent.server import StreamServer
@@ -28,11 +28,12 @@ class Connection(object):
             # 必须要启动一个新的greenlet，在greenlet里面执行readline
             # 否则会有内存泄漏
             def spawn_read():
-                message = self.stream.read_with_checker(bintp.check_buf)
+                message = self.stream.read_with_checker(Bintp().unpack)
                 #print "message, len: %s, content: %r" % (len(message), message)
 
                 if message:
-                    tp = bintp.from_buf(message)
+                    tp = Bintp()
+                    tp.unpack(message)
                     print tp
                     tp.cmd += 1
                     self.stream.write(tp.pack())
