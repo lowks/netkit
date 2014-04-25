@@ -97,13 +97,14 @@ class Bintp(object):
 
         dict_values = dict([(key, values[i]) for i, key in enumerate(self.header_attrs.keys())])
 
-        magic = dict_values.get('magic')
-        body_len = dict_values.get('_body_len')
+        if hasattr(self, 'magic'):
+            magic = dict_values.get('magic')
+            if magic != self.magic:
+                logger.error('magic not equal. %s != %s' % (magic, self.magic))
+                # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
+                return -2
 
-        if magic != self.magic:
-            logger.error('magic not equal. %s != %s' % (magic, self.magic))
-            # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
-            return -2
+        body_len = dict_values.get('_body_len')
 
         if len(buf) < (body_len + self.header_len):
             # 还要继续收
