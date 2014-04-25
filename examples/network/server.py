@@ -32,8 +32,7 @@ class Connection(object):
                 #print "message, len: %s, content: %r" % (len(message), message)
 
                 if message:
-                    tp = Bintp()
-                    tp.unpack(message)
+                    tp = Bintp(message)
                     print tp
                     tp.cmd += 1
                     self.stream.write(tp.pack())

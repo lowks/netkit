@@ -23,14 +23,22 @@ class Bintp(object):
     # 如果header字段变化，那么格式也会变化
     header_attrs = None
 
+    # 如果调用unpack成功的话，会置为True
+    unpack_done = None
+
     _body = ''
 
-    def __init__(self, header_attrs=None):
+    def __init__(self, buf=None, header_attrs=None):
         self.header_attrs = header_attrs or HEADER_ATTRS
+        self.unpack_done = False
 
         # 先做初始化
         for k, v in self.header_attrs.items():
             setattr(self, k, v[1])
+
+        # 为了简写代码
+        if buf:
+            self.unpack(buf)
 
     @property
     def header_format(self):
@@ -105,6 +113,8 @@ class Bintp(object):
             setattr(self, k, v)
 
         self.body = buf[self.header_len:self.header_len+body_len]
+
+        self.unpack_done = True
 
         return self.packet_len
 

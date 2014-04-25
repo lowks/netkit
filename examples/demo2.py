@@ -9,8 +9,7 @@ print p
 print repr(p.pack())
 print p.body
 
-q = Bintp()
-print q.unpack(p.pack())
+q = Bintp(p.pack())
 print q
 print q.body
 print q.magic

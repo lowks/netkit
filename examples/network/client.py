@@ -27,9 +27,7 @@ while True:
     buf = stream.read_with_checker(Bintp().unpack)
 
     if buf:
-        rtp = Bintp()
-        rtp.unpack(buf)
-        print rtp
+        print Bintp(buf)
 
     if stream.closed():
         print 'server closed'

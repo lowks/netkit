@@ -6,8 +6,6 @@ p = Bintp()
 print p
 print repr(p.pack())
 
-tp = Bintp()
-
-print tp.unpack(p.pack())
+tp = Bintp(p.pack())
 
 print tp
