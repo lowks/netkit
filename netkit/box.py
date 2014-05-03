@@ -50,8 +50,12 @@ class Box(object):
         return struct.calcsize(self.header_format)
 
     @property
+    def body_len(self):
+        return len(self.body)
+
+    @property
     def packet_len(self):
-        return self.header_len + len(self.body)
+        return self.header_len + self.body_len
 
     @packet_len.setter
     def packet_len(self, value):
