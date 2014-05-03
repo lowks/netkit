@@ -17,10 +17,10 @@ s.connect(address)
 
 stream = Stream(s)
 
-tp = Box()
-tp.body = '我爱你'
+box = Box()
+box.body = '我爱你'
 
-stream.write(tp.pack())
+stream.write(box.pack())
 
 while True:
     # 阻塞
