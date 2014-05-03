@@ -15,7 +15,7 @@ HEADER_ATTRS = OrderedDict([
 ])
 
 
-class Bintp(object):
+class Box(object):
     """
     类
     """

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from netkit.bintp import Bintp
+from netkit.box import Box
 
 
-p = Bintp()
+p = Box()
 p.body = '我爱你'
 print p
 print repr(p.pack())
@@ -11,7 +11,7 @@ print p.body
 
 buf = p.pack()
 
-q = Bintp()
+q = Box()
 for i in range(0, len(buf)+1):
     tmp_buf = buf[0:i]
 
