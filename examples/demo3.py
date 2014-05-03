@@ -3,18 +3,18 @@
 from netkit.box import Box
 
 
-p = Box()
-p.body = '我爱你'
-print p
-print repr(p.pack())
-print p.body
+box1 = Box()
+box1.body = '我爱你'
+print box1
+print repr(box1.pack())
+print box1.body
 
-buf = p.pack()
+buf = box1.pack()
 
-q = Box()
+box2 = Box()
 for i in range(0, len(buf)+1):
     tmp_buf = buf[0:i]
 
-    if q.unpack(tmp_buf) > 0:
-        print q
+    if box2.unpack(tmp_buf) > 0:
+        print box2
         break

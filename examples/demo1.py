@@ -2,10 +2,10 @@
 
 from netkit.box import Box
 
-p = Box()
-print p
-print repr(p.pack())
+box1 = Box()
+print box1
+print repr(box1.pack())
 
-tp = Box(p.pack())
+box2 = Box(box1.pack())
 
-print tp
+print box2

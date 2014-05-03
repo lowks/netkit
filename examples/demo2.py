@@ -3,13 +3,13 @@
 from netkit.box import Box
 
 
-p = Box()
-p.body = '我爱你'
-print p
-print repr(p.pack())
-print p.body
+box1 = Box()
+box1.body = '我爱你'
+print box1
+print repr(box1.pack())
+print box1.body
 
-q = Box(p.pack())
-print q
-print q.body
-print q.magic
+box2 = Box(box1.pack())
+print box2
+print box2.body
+print box2.magic
