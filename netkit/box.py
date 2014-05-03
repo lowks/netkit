@@ -8,7 +8,7 @@ from .log import logger
 HEADER_ATTRS = OrderedDict([
     ('magic', ('I', 2037952207)),
     ('version', ('I', 0)),
-    ('_body_len', ('I', 0)),
+    ('packet_len', ('I', 0)),
     ('cmd', ('i', 0)),
     ('ret', ('i', 0)),
     ('reserve_str', ('32s', ''))
@@ -26,7 +26,8 @@ class Box(object):
     # 如果调用unpack成功的话，会置为True
     unpack_done = None
 
-    _body = ''
+    # body
+    body = ''
 
     def __init__(self, buf=None, header_attrs=None):
         self.header_attrs = header_attrs or HEADER_ATTRS
@@ -45,32 +46,17 @@ class Box(object):
         return '!' + ''.join(value[0] for value in self.header_attrs.values())
 
     @property
-    def body_len_key(self):
-        """
-        默认是 _body_len，但也支持修改，只要把这个覆盖就可以了
-        """
-        return '_body_len'
-
-    @property
     def header_len(self):
         return struct.calcsize(self.header_format)
 
     @property
     def packet_len(self):
-        return self.header_len + self.body_len
+        return self.header_len + len(self.body)
 
-    @property
-    def body(self):
-        return self._body
-
-    @body.setter
-    def body(self, value):
-        self._body = value
-        setattr(self, self.body_len_key, len(self._body))
-
-    @property
-    def body_len(self):
-        return getattr(self, self.body_len_key, None)
+    @packet_len.setter
+    def packet_len(self, value):
+        # 什么也不需要做，因为不能让别人来赋值
+        pass
 
     def pack(self):
         """
@@ -111,16 +97,16 @@ class Box(object):
                 # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
                 return -2
 
-        body_len = dict_values.get(self.body_len_key)
+        packet_len = dict_values.get('packet_len')
 
-        if len(buf) < (body_len + self.header_len):
+        if len(buf) < packet_len:
             # 还要继续收
             return 0
 
         for k, v in dict_values.items():
             setattr(self, k, v)
 
-        self.body = buf[self.header_len:self.header_len+body_len]
+        self.body = buf[self.header_len:packet_len]
 
         self.unpack_done = True
 
