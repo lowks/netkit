@@ -45,6 +45,13 @@ class Box(object):
         return '!' + ''.join(value[0] for value in self.header_attrs.values())
 
     @property
+    def body_len_key(self):
+        """
+        默认是 _body_len，但也支持修改，只要把这个覆盖就可以了
+        """
+        return '_body_len'
+
+    @property
     def header_len(self):
         return struct.calcsize(self.header_format)
 
@@ -59,11 +66,11 @@ class Box(object):
     @body.setter
     def body(self, value):
         self._body = value
-        self._body_len = len(self._body)
+        setattr(self, self.body_len_key, len(self._body))
 
     @property
     def body_len(self):
-        return self._body_len
+        return getattr(self, self.body_len_key, None)
 
     def pack(self):
         """
@@ -104,7 +111,7 @@ class Box(object):
                 # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
                 return -2
 
-        body_len = dict_values.get('_body_len')
+        body_len = dict_values.get(self.body_len_key)
 
         if len(buf) < (body_len + self.header_len):
             # 还要继续收
