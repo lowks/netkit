@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+HEADER_ATTRS 可以自定义，但是必须满足 packet_len 或 body_len 其中之一存在
+"""
 
 import struct
 from collections import OrderedDict
@@ -53,6 +56,11 @@ class Box(object):
     def body_len(self):
         return len(self.body)
 
+    @body_len.setter
+    def body_len(self, value):
+        # 什么也不要做
+        pass
+
     @property
     def packet_len(self):
         return self.header_len + self.body_len
@@ -101,7 +109,13 @@ class Box(object):
                 # raise ValueError('magic not equal. %s != %s' % (magic, HEADER_MAGIC))
                 return -2
 
-        packet_len = dict_values.get('packet_len')
+        if 'packet_len' in dict_values:
+            packet_len = dict_values.get('packet_len')
+        elif 'body_len' in dict_values:
+            packet_len = dict_values.get('body_len') + self.header_len
+        else:
+            logger.error('there is no packet_len or body_len in header')
+            return -3
 
         if len(buf) < packet_len:
             # 还要继续收
