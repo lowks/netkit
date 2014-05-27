@@ -5,29 +5,30 @@ import functools
 import numbers
 import collections
 import re
+from threading import Lock
 from .log import logger
 
 
-def count_reader(func):
+def lock_read(func):
     @functools.wraps(func)
     def func_wrapper(stream, *args, **kwargs):
         try:
-            stream.reader_count += 1
+            stream.read_lock.acquire()
             return func(stream, *args, **kwargs)
         finally:
-            stream.reader_count -= 1
+            stream.read_lock.release()
 
     return func_wrapper
 
 
-def count_writer(func):
+def lock_write(func):
     @functools.wraps(func)
     def func_wrapper(stream, *args, **kwargs):
         try:
-            stream.writer_count += 1
+            stream.write_lock.acquire()
             return func(stream, *args, **kwargs)
         finally:
-            stream.writer_count -= 1
+            stream.write_lock.release()
     return func_wrapper
 
 
@@ -50,8 +51,8 @@ class Stream(object):
         self._read_until_close = False
         self._read_checker = None
 
-        self.reader_count = 0
-        self.writer_count = 0
+        self.read_lock = Lock()
+        self.write_lock = Lock()
 
     def close(self, exc_info=False):
         if self.closed():
@@ -77,7 +78,7 @@ class Stream(object):
         finally:
             pass
 
-    @count_reader
+    @lock_read
     def read_until_regex(self, regex):
         """Run when we read the given regex pattern.
         """
@@ -87,7 +88,7 @@ class Stream(object):
             if ret <= 0:
                 return data
 
-    @count_reader
+    @lock_read
     def read_until(self, delimiter):
         """
         为了兼容调用的方法
@@ -99,7 +100,7 @@ class Stream(object):
             if ret <= 0:
                 return data
 
-    @count_reader
+    @lock_read
     def read_bytes(self, num_bytes):
         """Run when we read the given number of bytes.
         """
@@ -110,7 +111,7 @@ class Stream(object):
             if ret <= 0:
                 return data
 
-    @count_reader
+    @lock_read
     def read_until_close(self):
         """Reads all data from the socket until it is closed.
         """
@@ -123,7 +124,7 @@ class Stream(object):
             if ret <= 0:
                 return data
 
-    @count_reader
+    @lock_read
     def read_with_checker(self, checker):
         """
         checker(buf):
@@ -138,7 +139,7 @@ class Stream(object):
             if ret <= 0:
                 return data
 
-    @count_writer
+    @lock_write
     def write(self, data):
         """
         写数据
@@ -165,10 +166,10 @@ class Stream(object):
         return not self.sock
 
     def reading(self):
-        return bool(self.reader_count)
+        return self.read_lock.locked()
 
     def writing(self):
-        return bool(self.writer_count)
+        return self.write_lock.locked()
 
     def set_nodelay(self, value):
         """
