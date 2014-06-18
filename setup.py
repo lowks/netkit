@@ -11,5 +11,5 @@ setup(
     license="BSD",
     author="dantezhu",
     author_email="zny2008@gmail.com",
-    description="useful kit for nework programing",
+    description="useful kit for network programing",
 )

@@ -1,4 +1,4 @@
 netkit
 ======
 
-useful kit for nework programing
+useful kit for network programing
