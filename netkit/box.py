@@ -14,7 +14,6 @@ HEADER_ATTRS = OrderedDict([
     ('packet_len', ('I', 0)),
     ('cmd', ('i', 0)),
     ('ret', ('i', 0)),
-    ('reserve_str', ('32s', ''))
 ])
 
 
