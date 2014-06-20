@@ -80,13 +80,16 @@ class Box(object):
 
         return header + self.body
 
-    def unpack(self, buf):
+    def unpack(self, buf, save=True):
         """
-        从buf里面生成，返回格式为 ret
+        解析buf，并赋值
 
-        >0: 成功生成obj，返回了使用的长度，即剩余的部分buf要存起来
-        <0: 报错
-        0: 继续收
+        :param buf:     输入buf
+        :param save:    是否赋值
+        :return:
+            >0: 成功生成obj，返回了使用的长度，即剩余的部分buf要存起来
+            <0: 报错
+            0: 继续收
         """
 
         if len(buf) < self.header_len:
@@ -121,6 +124,10 @@ class Box(object):
             # 还要继续收
             return 0
 
+        if not save:
+            # 如果不需要保存的话，就直接返回好了
+            return packet_len
+
         for k, v in dict_values.items():
             setattr(self, k, v)
 
@@ -129,6 +136,18 @@ class Box(object):
         self.unpack_done = True
 
         return self.packet_len
+
+    def check(self, buf):
+        """
+        仅检查buf是否合法
+
+        :param buf:     输入buf
+        :return:
+            >0: 成功生成obj，返回了使用的长度，即剩余的部分buf要存起来
+            <0: 报错
+            0: 继续收
+        """
+        return self.unpack(buf, save=False)
 
     def __repr__(self):
         values = [(k, getattr(self, k)) for k in self.header_attrs]
