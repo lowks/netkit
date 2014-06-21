@@ -8,7 +8,7 @@ setup(
     install_requires=[],
     scripts=[],
     url="https://github.com/dantezhu/netkit",
-    license="BSD",
+    license="MIT",
     author="dantezhu",
     author_email="zny2008@gmail.com",
     description="useful kit for network programing",
