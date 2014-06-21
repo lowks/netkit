@@ -9,9 +9,9 @@ from .log import logger
 
 # 如果header字段变化，那么格式也会变化
 HEADER_ATTRS = OrderedDict([
-    ('magic', ('I', 2037952207)),
-    ('version', ('I', 0)),
-    ('packet_len', ('I', 0)),
+    ('magic', ('i', 2037952207)),
+    ('version', ('i', 0)),
+    ('packet_len', ('i', 0)),
     ('cmd', ('i', 0)),
     ('ret', ('i', 0)),
     ('sn', ('i', 0)),
