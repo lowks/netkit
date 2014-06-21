@@ -24,20 +24,20 @@ class Box(object):
     """
 
     # 如果header字段变化，那么格式也会变化
-    header_attrs = None
+    _header_attrs = None
 
     # 如果调用unpack成功的话，会置为True
-    unpack_done = None
+    _unpack_done = None
 
     # body
     body = ''
 
     def __init__(self, buf=None, header_attrs=None):
-        self.header_attrs = header_attrs or HEADER_ATTRS
-        self.unpack_done = False
+        self._header_attrs = header_attrs or HEADER_ATTRS
+        self._unpack_done = False
 
         # 先做初始化
-        for k, v in self.header_attrs.items():
+        for k, v in self._header_attrs.items():
             setattr(self, k, v[1])
 
         # 为了简写代码
@@ -46,7 +46,7 @@ class Box(object):
 
     @property
     def header_format(self):
-        return '!' + ''.join(value[0] for value in self.header_attrs.values())
+        return '!' + ''.join(value[0] for value in self._header_attrs.values())
 
     @property
     def header_len(self):
@@ -70,11 +70,15 @@ class Box(object):
         # 什么也不需要做，因为不能让别人来赋值
         pass
 
+    @property
+    def unpack_done(self):
+        return self._unpack_done
+
     def pack(self):
         """
         打包
         """
-        values = [getattr(self, k) for k in self.header_attrs]
+        values = [getattr(self, k) for k in self._header_attrs]
 
         header = struct.pack(self.header_format, *values)
 
@@ -103,7 +107,7 @@ class Box(object):
             logger.error('unpack fail.', exc_info=True)
             return -1
 
-        dict_values = dict([(key, values[i]) for i, key in enumerate(self.header_attrs.keys())])
+        dict_values = dict([(key, values[i]) for i, key in enumerate(self._header_attrs.keys())])
 
         if hasattr(self, 'magic'):
             magic = dict_values.get('magic')
@@ -133,7 +137,7 @@ class Box(object):
 
         self.body = buf[self.header_len:packet_len]
 
-        self.unpack_done = True
+        self._unpack_done = True
 
         return self.packet_len
 
@@ -150,7 +154,7 @@ class Box(object):
         return self.unpack(buf, save=False)
 
     def __repr__(self):
-        values = [(k, getattr(self, k)) for k in self.header_attrs]
+        values = [(k, getattr(self, k)) for k in self._header_attrs]
 
         values.append(('body', self.body))
 
