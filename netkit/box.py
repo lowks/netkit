@@ -97,7 +97,7 @@ class Box(object):
         """
 
         if len(buf) < self.header_len:
-            logger.error('buf.len(%s) should > header_len(%s)' % (len(buf), self.header_len))
+            # logger.error('buf.len(%s) should > header_len(%s)' % (len(buf), self.header_len))
             # raise ValueError('buf.len(%s) should > header_len(%s)' % (len(buf), HEADER_LEN))
             return 0
 
