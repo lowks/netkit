@@ -32,10 +32,17 @@ class Connection(object):
                 #print "message, len: %s, content: %r" % (len(message), message)
 
                 if message:
-                    box = Box(message)
-                    print box
-                    box.cmd += 1
-                    self.stream.write(box.pack())
+                    req_box = Box(message)
+                    rsp_box = Box()
+                    print rsp_box
+                    rsp_box.cmd = req_box.cmd
+                    rsp_box.ret = 1000
+                    rsp_box.version = 333
+                    rsp_box.body = 'ok'
+
+                    buf = rsp_box.pack()
+                    self.stream.write(buf[:10])
+                    self.stream.write(buf[10:])
 
                 if self.stream.closed():
                     print 'client closed'

@@ -18,6 +18,7 @@ s.connect(address)
 stream = Stream(s)
 
 box = Box()
+box.cmd = 32
 box.body = '我爱你'
 
 stream.write(box.pack())
