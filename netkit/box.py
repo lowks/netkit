@@ -20,25 +20,20 @@ HEADER_ATTRS = OrderedDict([
 
 class Box(object):
     """
-    类
+    Box 打包解包
     """
 
-    # 如果header字段变化，那么格式也会变化
     _header_attrs = None
 
     # 如果调用unpack成功的话，会置为True
     _unpack_done = None
 
-    # body
-    body = ''
+    body = None
 
     def __init__(self, buf=None, header_attrs=None):
         self._header_attrs = header_attrs or HEADER_ATTRS
-        self._unpack_done = False
 
-        # 先做初始化
-        for k, v in self._header_attrs.items():
-            setattr(self, k, v[1])
+        self.reset()
 
         # 为了简写代码
         if buf:
@@ -73,6 +68,14 @@ class Box(object):
     @property
     def unpack_done(self):
         return self._unpack_done
+
+    def reset(self):
+        self._unpack_done = False
+
+        for k, v in self._header_attrs.items():
+            setattr(self, k, v[1])
+
+        self.body = ''
 
     def pack(self):
         """
