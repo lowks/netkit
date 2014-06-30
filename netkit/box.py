@@ -3,6 +3,7 @@
 HEADER_ATTRS 可以自定义，但是必须满足 packet_len 或 body_len 其中之一存在
 """
 
+import json
 import struct
 from collections import OrderedDict
 from .log import logger
@@ -155,6 +156,27 @@ class Box(object):
             0: 继续收
         """
         return self.unpack(buf, save=False)
+
+    @property
+    def values(self):
+        """
+        默认支持json格式
+        :return:
+        """
+        if not self.body:
+            return None
+        return json.loads(self.body)
+
+    @values.setter
+    def values(self, data):
+        """
+        默认支持json格式
+        :return:
+        """
+        if not data:
+            self.body = ''
+            return
+        self.body = json.dumps(data)
 
     def __repr__(self):
         values = [(k, getattr(self, k)) for k in self._header_attrs]
