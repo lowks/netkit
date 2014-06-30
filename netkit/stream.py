@@ -176,7 +176,7 @@ class Stream(object):
         直接抄的tornado
         """
         if (self.sock is not None and
-                    self.sock.family in (socket.AF_INET, socket.AF_INET6)):
+                self.sock.family in (socket.AF_INET, socket.AF_INET6)):
             self.sock.setsockopt(
                 socket.IPPROTO_TCP, socket.TCP_NODELAY, 1 if value else 0)
 
@@ -252,7 +252,8 @@ class Stream(object):
 
         Returns data if the read was completed.
         """
-        if self._read_bytes is not None and self._read_buffer_size >= self._read_bytes:
+        if (self._read_bytes is not None and
+                self._read_buffer_size >= self._read_bytes):
             num_bytes = self._read_bytes
             self._read_bytes = None
             return self._consume(num_bytes)
@@ -361,4 +362,3 @@ def _merge_prefix(deque, size):
 def doctests():
     import doctest
     return doctest.DocTestSuite()
-

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
-from gevent import monkey;monkey.patch_all()
+from gevent import monkey; monkey.patch_all()
 
 from netkit.box import Box
 from netkit.stream import Stream
@@ -29,7 +29,7 @@ class Connection(object):
             # 否则会有内存泄漏
             def spawn_read():
                 message = self.stream.read_with_checker(Box().check)
-                #print "message, len: %s, content: %r" % (len(message), message)
+                # print "message, len: %s, content: %r" % (len(message), message)
 
                 if message:
                     req_box = Box(message)
@@ -52,9 +52,8 @@ class Connection(object):
             t = gevent.spawn(spawn_read)
             t.join()
 
-
         # 即使不调用close，handle结束也会自动关闭
-        #sock.close()
+        # sock.close()
 
 
 server = StreamServer(('127.0.0.1', 7777), Connection)
